@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sketchbook</title>
+<style>
+  :root {
+    --paper: #EDE7D8;
+    --paper-shadow: #D9D0B8;
+    --ink: #2B2925;
+    --ink-soft: #6B6759;
+    --graphite: #2B2925;
+    --sanguine: #A8481D;
+    --indigo: #3B4A6B;
+    --chalk: #F4F0E4;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: #C9BFA4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    padding: 24px;
+  }
+
+  .book {
+    width: 100%;
+    max-width: 620px;
+    background: var(--paper);
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08), 0 20px 44px rgba(30,26,15,0.28);
+    padding: 22px 22px 18px;
+    position: relative;
+  }
+
+  .rings {
+    display: flex;
+    justify-content: space-evenly;
+    padding: 0 10px 14px;
+  }
+
+  .rings span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #B7AD90;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.35);
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 0 4px 14px;
+  }
+
+  h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 21px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0;
+    letter-spacing: 0.2px;
+  }
+
+  .hint {
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+  }
+
+  .page {
+    background: var(--chalk);
+    border-radius: 2px;
+    box-shadow: inset 0 0 0 1px rgba(43,41,37,0.08), 0 1px 3px rgba(0,0,0,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    touch-action: none;
+    cursor: crosshair;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    padding: 16px 6px 4px;
+  }
+
+  .pencils {
+    display: flex;
+    gap: 10px;
+  }
+
+  .pencil {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    position: relative;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+
+  .pencil.graphite { background: var(--graphite); }
+  .pencil.sanguine { background: var(--sanguine); }
+  .pencil.indigo   { background: var(--indigo); }
+  .pencil.eraser   { background: var(--chalk); box-shadow: inset 0 0 0 1.5px #B7AD90; }
+
+  .pencil:hover { transform: scale(1.1); }
+  .pencil.active { border-color: var(--ink); transform: scale(1.15); }
+
+  .size-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .size-control label {
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  input[type="range"] {
+    flex: 1;
+    accent-color: var(--ink);
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  button.action {
+    border: 1.5px solid var(--ink-soft);
+    background: transparent;
+    color: var(--ink);
+    font-size: 12px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    letter-spacing: 0.4px;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  button.action:hover {
+    background: var(--ink);
+    color: var(--chalk);
+  }
+</style>
+</head>
+<body>
+
+<div class="book">
+  <div class="rings">
+    <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <header>
+    <h1>Sketchbook</h1>
+    <div class="hint">draw with mouse or finger</div>
+  </header>
+
+  <div class="page">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <div class="toolbar">
+    <div class="pencils">
+      <button class="pencil graphite active" data-color="#2B2925" title="Graphite"></button>
+      <button class="pencil sanguine" data-color="#A8481D" title="Sanguine"></button>
+      <button class="pencil indigo" data-color="#3B4A6B" title="Indigo"></button>
+      <button class="pencil eraser" data-color="#F4F0E4" title="Eraser"></button>
+    </div>
+
+    <div class="size-control">
+      <label for="size">Weight</label>
+      <input type="range" id="size" min="1" max="18" value="3">
+    </div>
+
+    <div class="actions">
+      <button class="action" id="clearBtn">Clear page</button>
+      <button class="action" id="saveBtn">Save as image</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const page = document.querySelector('.page');
+
+  let color = '#2B2925';
+  let weight = 3;
+  let drawing = false;
+  let lastX = 0, lastY = 0;
+
+  function resizeCanvas() {
+    const rect = page.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+    const prev = document.createElement('canvas');
+    prev.width = canvas.width;
+    prev.height = canvas.height;
+    prev.getContext('2d').drawImage(canvas, 0, 0);
+
+    canvas.width = rect.width * ratio;
+    canvas.height = 380 * ratio;
+    canvas.style.height = '380px';
+    ctx.scale(ratio, ratio);
+    ctx.drawImage(prev, 0, 0, prev.width / ratio, prev.height / ratio);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const point = e.touches ? e.touches[0] : e;
+    return {
+      x: point.clientX - rect.left,
+      y: point.clientY - rect.top
+    };
+  }
+
+  function startDraw(e) {
+    e.preventDefault();
+    drawing = true;
+    const pos = getPos(e);
+    lastX = pos.x;
+    lastY = pos.y;
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, weight / 2, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+
+  function draw(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    const pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = weight;
+    ctx.stroke();
+    lastX = pos.x;
+    lastY = pos.y;
+  }
+
+  function stopDraw() {
+    drawing = false;
+  }
+
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', stopDraw);
+  canvas.addEventListener('mouseleave', stopDraw);
+
+  canvas.addEventListener('touchstart', startDraw);
+  canvas.addEventListener('touchmove', draw);
+  canvas.addEventListener('touchend', stopDraw);
+
+  document.querySelectorAll('.pencil').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.pencil').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      color = btn.dataset.color;
+      weight = btn.classList.contains('eraser') ? Math.max(14, weight) : weight;
+    });
+  });
+
+  document.getElementById('size').addEventListener('input', (e) => {
+    weight = Number(e.target.value);
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  });
+
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'sketch.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+</script>
+
+</body>
+</html>
