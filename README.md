@@ -229,11 +229,11 @@ GitHub Actions automatically deploys the latest files to the S3 bucket.
 
 ## Website Preview
 
-![S3](Screenshots/S3 Bucket.png)
+![S3](Screenshots/S3Bucket.png)
 
 ## Website Preview
 
-![CloudFront](Screenshots/Cloud Front.png)
+![CloudFront](Screenshots/CloudFront.png)
 
 ---
 
