@@ -223,6 +223,9 @@ GitHub Actions automatically deploys the latest files to the S3 bucket.
 
 ---
 
+## 📷 Screenshot 
+![alt text](<Screenshot 2026-07-12 141046-1.png>)
+
 ## 📷 Future Improvements
 
 * Custom Domain with Amazon Route 53
@@ -254,8 +257,8 @@ GitHub Actions automatically deploys the latest files to the S3 bucket.
 
 Aspiring AWS & DevOps Engineer
 
-* GitHub: https://github.com/your-username
-* LinkedIn: https://www.linkedin.com/in/your-linkedin-profile/
+* GitHub: https://github.com/DevPondwal1
+* LinkedIn: www.linkedin.com/in/dev-pondwal-b384b1167
 
 ---
 
